@@ -15,7 +15,8 @@
     "react-dom": "^16.13.0",
     "react-scripts": "3.4.0",
     "semantic-ui-react": "^0.88.2",
-    "typescript": "~3.7.2"
+    "typescript": "~3.7.2",
+    "uuid": "^7.0.2"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -37,5 +38,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/uuid": "^7.0.0"
   }
 }
