@@ -51,9 +51,9 @@ class ActivityStore {
   };
 
   @action loadActivity = async (id: string) => {
-    const another_activity = this.getActivity(id);
-    if(another_activity){
-      this.activity = another_activity;
+    const activityFromRegister = this.getActivity(id);
+    if(activityFromRegister){
+      this.activity = activityFromRegister;
     } else {
       this.loadingInitial = true;
       try{
@@ -64,7 +64,7 @@ class ActivityStore {
       } catch(error){
         console.error(error);
       } finally {
-        runInAction('getting activity', () => {
+        runInAction('get activity error', () => {
           this.loadingInitial = false;
         });
       }

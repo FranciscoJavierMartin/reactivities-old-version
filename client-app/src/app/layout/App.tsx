@@ -19,10 +19,12 @@ import {
   MANAGE_ACTIVITY_ROUTE
 } from '../constants/routes';
 import NotFound from './NotFound';
+import { ToastContainer } from 'react-toastify';
 
 const App: React.FC<RouteComponentProps> = ({ location }) => {
   return (
     <Fragment>
+      <ToastContainer position='bottom-right' />
       <Route exact path={`/${HOME_ROUTE}`} component={HomePage} />
       <Route
         path={'/(.+)'}

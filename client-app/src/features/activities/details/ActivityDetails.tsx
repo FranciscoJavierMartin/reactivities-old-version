@@ -8,6 +8,7 @@ import ActivityDetailedHeader from './ActivityDetailedHeader';
 import ActivityDetailedInfo from './ActivityDetailedInfo';
 import ActivityDetailedChat from './ActivityDetailedChat';
 import ActivityDetailedSidebar from './ActivityDetailedSidebar';
+import { NOT_FOUND_ROUTE } from '../../../app/constants/routes';
 
 interface IDetailParams {
   id: string;
@@ -15,23 +16,25 @@ interface IDetailParams {
 
 interface IActivityDetailsProps extends RouteComponentProps<IDetailParams> {}
 
-const ActivityDetails: React.FC<IActivityDetailsProps> = ({
-  match,
-}) => {
+const ActivityDetails: React.FC<IActivityDetailsProps> = ({ match, history }) => {
   const activityStore = useContext(ActivityStore);
   const { activity, loadActivity, loadingInitial } = activityStore;
 
   useEffect(() => {
-    loadActivity(match.params.id);
-  }, [loadActivity, match.params.id]);
+    loadActivity(match.params.id).catch(() => {
+      history.push(`/${NOT_FOUND_ROUTE}`)
+    });
+  }, [loadActivity, match.params.id, history]);
 
-  return loadingInitial || !activity ? (
+  return loadingInitial ? (
     <LoadingComponent content='Loading activity...' />
+  ) : !activity ? (
+    <h2>Activity not found</h2>
   ) : (
     <Grid>
       <Grid.Column width={10}>
-        <ActivityDetailedHeader activity={activity}/>
-        <ActivityDetailedInfo activity={activity}/>
+        <ActivityDetailedHeader activity={activity} />
+        <ActivityDetailedInfo activity={activity} />
         <ActivityDetailedChat />
       </Grid.Column>
       <Grid.Column width={6}>

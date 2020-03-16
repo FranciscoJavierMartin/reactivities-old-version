@@ -9,7 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers
 {
   [Route("api/[controller]")]
-  [ApiController]
+  // TODO: Research about why it [ApiController is removed, RestException works]
+  //[ApiController]
   public class ActivitiesController : ControllerBase
   {
     private readonly IMediator _mediator;
@@ -46,8 +47,6 @@ namespace API.Controllers
     [HttpDelete("{id}")]
     public async Task<ActionResult<Unit>> Delete(Guid id)
     {
-      // This for debug purpose
-      Console.WriteLine("Helllooooooo");
       return await _mediator.Send(new Delete.Command { Id = id });
     }
   }
