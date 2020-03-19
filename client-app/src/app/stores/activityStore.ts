@@ -2,6 +2,9 @@ import { createContext, SyntheticEvent } from 'react';
 import { observable, action, computed, configure, runInAction } from 'mobx';
 import { IActivity } from './../models/activity';
 import agent from '../api/agent';
+import { ACTIVITIES_ROUTE } from '../constants/routes';
+import { history } from '../..';
+import { toast } from 'react-toastify';
 
 configure({
   enforceActions: 'always'
@@ -15,20 +18,25 @@ class ActivityStore {
   @observable target: string = '';
 
   @computed get activitiesByDate() {
-    return this.groupActivitiesByDate(Array.from(this.activityRegistry.values()));
+    return this.groupActivitiesByDate(
+      Array.from(this.activityRegistry.values())
+    );
   }
 
-  groupActivitiesByDate(activities: IActivity[]){
+  groupActivitiesByDate(activities: IActivity[]) {
     const sortedActivities = activities.sort(
-      (a, b) => Date.parse(a.date) - Date.parse(b.date)
+      (a, b) => a.date.getTime() - b.date.getTime()
     );
 
-    return Object.entries(sortedActivities.reduce((activities, activity) => {
-      const date = activity.date.split('T')[0];
-      activities[date] = activities[date] ? [...activities[date], activity] : [activity];
-      return activities;
-    }, {} as {[key: string]: IActivity[]}));
-
+    return Object.entries(
+      sortedActivities.reduce((activities, activity) => {
+        const date = activity.date.toISOString().split('.')[0];
+        activities[date] = activities[date]
+          ? [...activities[date], activity]
+          : [activity];
+        return activities;
+      }, {} as { [key: string]: IActivity[] })
+    );
   }
 
   @action loadActivities = async () => {
@@ -37,7 +45,7 @@ class ActivityStore {
       const activities = await agent.Activities.list();
       runInAction('loading activities', () => {
         activities.forEach((activity: IActivity) => {
-          activity.date = activity.date.split('.')[0];
+          activity.date = new Date(activity.date);
           this.activityRegistry.set(activity.id, activity);
         });
       });
@@ -51,17 +59,20 @@ class ActivityStore {
   };
 
   @action loadActivity = async (id: string) => {
-    const activityFromRegister = this.getActivity(id);
-    if(activityFromRegister){
-      this.activity = activityFromRegister;
+    let selectedActivity = this.getActivity(id);
+
+    if (selectedActivity) {
+      this.activity = selectedActivity;
     } else {
       this.loadingInitial = true;
-      try{
-        const selectedActivity = await agent.Activities.details(id);
+      try {
+        selectedActivity = await agent.Activities.details(id);
         runInAction('getting activity', () => {
-          this.activity = selectedActivity;
+          selectedActivity!.date = new Date(selectedActivity!.date);
+          this.activity = selectedActivity!;
+          this.activityRegistry.set(this.activity.id, selectedActivity!);
         });
-      } catch(error){
+      } catch (error) {
         console.error(error);
       } finally {
         runInAction('get activity error', () => {
@@ -69,15 +80,16 @@ class ActivityStore {
         });
       }
     }
-  }
+    return selectedActivity!;
+  };
 
   @action clearActivity = () => {
-    this.activity = null
-  }
+    this.activity = null;
+  };
 
   getActivity = (id: string) => {
     return this.activityRegistry.get(id);
-  }
+  };
 
   @action selectActivity = (id: string) => {
     this.activity = this.activityRegistry.get(id) || null;
@@ -90,8 +102,10 @@ class ActivityStore {
       runInAction('creating activity', () => {
         this.activityRegistry.set(activity.id, activity);
       });
+      history.push(`${ACTIVITIES_ROUTE}/${activity.id}`);
     } catch (error) {
       console.error(error);
+      toast.error('Problem submitting data');
     } finally {
       runInAction('creating activity finishing', () => {
         this.submitting = false;
@@ -108,6 +122,7 @@ class ActivityStore {
         this.activityRegistry.set(activity.id, activity);
         this.activity = activity;
       });
+      history.push(`${ACTIVITIES_ROUTE}/${activity.id}`);
     } catch (error) {
       console.error(error);
     } finally {
@@ -137,7 +152,6 @@ class ActivityStore {
       });
     }
   };
-
 }
 
 export default createContext(new ActivityStore());
