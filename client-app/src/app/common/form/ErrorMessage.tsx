@@ -2,12 +2,12 @@ import React, { FC } from 'react';
 import { AxiosResponse } from 'axios';
 import { Message } from 'semantic-ui-react';
 
-interface IProps {
+interface IErrorMessageProps {
   error: AxiosResponse;
   text?: string;
 }
 
-const ErrorMessage: FC<IProps> = ({ error, text }) => {
+const ErrorMessage: FC<IErrorMessageProps> = ({ error, text }) => {
   return (
     <Message error>
       <Message.Header>{error.statusText}</Message.Header>

@@ -3,11 +3,11 @@ import { FormFieldProps, Form, Label } from 'semantic-ui-react';
 import { FieldRenderProps } from 'react-final-form';
 
 // TODO: Should be HTMILInputElement
-interface IProps
+interface ITextInputProps
   extends FieldRenderProps<string, HTMLElement>,
     FormFieldProps {}
 
-const TextInput: React.FC<IProps> = ({
+const TextInput: React.FC<ITextInputProps> = ({
   input,
   width,
   type,

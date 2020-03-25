@@ -9,11 +9,11 @@ import {
 import { FieldRenderProps } from 'react-final-form';
 
 // TODO: Should be HTMLSelectElement
-interface IProps
+interface ISelectInputProps
   extends FieldRenderProps<string, HTMLElement>,
     FormFieldProps {}
 
-const SelectInput: React.FC<IProps> = ({
+const SelectInput: React.FC<ISelectInputProps> = ({
   input,
   width,
   options,
