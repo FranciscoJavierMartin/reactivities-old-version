@@ -1,5 +1,6 @@
 import React, { Fragment } from 'react'
 import { Segment, Header, Comment, Form, Button } from 'semantic-ui-react'
+import { MAIN_COLOR } from '../../../app/constants/common'
 
 const ActivityDetailedChat = () => {
   return (
@@ -8,7 +9,7 @@ const ActivityDetailedChat = () => {
         textAlign='center'
         attached='top'
         inverted
-        color='teal'
+        color={MAIN_COLOR}
         style={{border: 'none'}}>
         <Header>Chat about this event</Header>
       </Segment>

@@ -1,8 +1,5 @@
 # Reactivities
 
-## TODO
-- Get activity details from server
-
 ## Installation
 At the root folder run
 ~~~

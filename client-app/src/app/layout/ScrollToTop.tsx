@@ -4,7 +4,7 @@ import { withRouter } from 'react-router-dom';
 // TODO: Research how to type properly
 const ScrollToTop = ({
   children,
-  location: { pathname}
+  location: { pathname }
 }: any) => {
 
   useEffect(() => {

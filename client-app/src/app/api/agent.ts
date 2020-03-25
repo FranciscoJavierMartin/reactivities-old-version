@@ -1,10 +1,24 @@
-import axios, { AxiosResponse } from 'axios';
+import axios, { AxiosResponse, AxiosRequestConfig } from 'axios';
 import { IActivity } from '../models/activity';
 import { history } from '../..';
 import { NOT_FOUND_ROUTE } from '../constants/routes';
 import { toast } from 'react-toastify';
+import { IUser, IUserFormValues } from '../models/user';
+import { JWT_LOCALSTORAGE } from '../constants/common';
 
 axios.defaults.baseURL = 'http://localhost:5000/api';
+
+axios.interceptors.request.use((config: AxiosRequestConfig) => {
+  const token = window.localStorage.getItem(JWT_LOCALSTORAGE);
+
+  if(token){
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
 
 axios.interceptors.response.use(undefined, error => {
   if (error.message === 'Network Error' && !error.response) {
@@ -25,7 +39,7 @@ axios.interceptors.response.use(undefined, error => {
     }
   }
 
-  throw error;
+  throw error.response;
 });
 
 const responseBody = (response: AxiosResponse) => response.data;
@@ -55,6 +69,14 @@ const Activities = {
   delete: (id: string) => request.del(`/activities/${id}`)
 };
 
+const User = {
+  current: (): Promise<IUser> => request.get('/user'),
+  login: (user: IUserFormValues): Promise<IUser> =>
+    request.post(`/user/login`, user),
+  register: (user: IUserFormValues): Promise<IUser> =>
+    request.post(`/user/register`, user)
+};
 export default {
-  Activities
+  Activities,
+  User,
 };

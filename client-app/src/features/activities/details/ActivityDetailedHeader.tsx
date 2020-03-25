@@ -5,6 +5,7 @@ import { IActivity } from '../../../app/models/activity';
 import { Link } from 'react-router-dom';
 import { MANAGE_ACTIVITY_ROUTE } from '../../../app/constants/routes';
 import { format } from 'date-fns';
+import { MAIN_COLOR } from '../../../app/constants/common';
 
 const activityImageStyle = {
   filter: 'brightness(30%)'
@@ -53,7 +54,7 @@ const ActivityDetailedHeader: React.FC<IActivityDetailHeaderProps> = ({
         </Segment>
       </Segment>
       <Segment clearing attached='bottom'>
-        <Button color='teal'>Join activity</Button>
+        <Button color={MAIN_COLOR}>Join activity</Button>
         <Button>Cancel attendance</Button>
         <Button
           as={Link}

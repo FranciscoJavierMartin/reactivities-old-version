@@ -1,6 +1,7 @@
 import React, { Fragment } from 'react';
 import { Segment, List, Label, Image, Item } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
+import { MAIN_COLOR } from '../../../app/constants/common';
 
 const ActivityDetailedSidebar = () => {
   return (
@@ -11,7 +12,7 @@ const ActivityDetailedSidebar = () => {
         attached='top'
         secondary
         inverted
-        color='teal'
+        color={MAIN_COLOR}
       >
         3 People going
       </Segment>
