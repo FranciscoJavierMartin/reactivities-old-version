@@ -1,24 +1,24 @@
-using Microsoft.EntityFrameworkCore;
+using System.Text;
+using System.Threading.Tasks;
+using API.Middleware;
+using Application.Activities;
+using Application.Interfaces;
+using AutoMapper;
+using Domain;
+using FluentValidation.AspNetCore;
+using Infrastructure.Security;
+using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Persistence;
-using MediatR;
-using Application.Activities;
-using FluentValidation.AspNetCore;
-using API.Middleware;
-using Microsoft.AspNetCore.Mvc;
-using Domain;
-using Microsoft.AspNetCore.Identity;
-using Application.Interfaces;
-using Infrastructure.Security;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Authorization;
+using Persistence;
 
 namespace API
 {
@@ -36,6 +36,7 @@ namespace API
     {
       services.AddDbContext<DataContext>(opt =>
       {
+        opt.UseLazyLoadingProxies();
         opt.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
       });
       services.AddCors(opt =>
@@ -46,12 +47,12 @@ namespace API
         });
       });
       services.AddMediatR(typeof(List.Handler).Assembly);
+      services.AddAutoMapper(typeof(List.Handler));
       services.AddControllers(opt =>
       {
         var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
         opt.Filters.Add(new AuthorizeFilter(policy));
-      })
-        .AddFluentValidation(cfg =>
+      }).AddFluentValidation(cfg =>
         cfg.RegisterValidatorsFromAssemblyContaining<Create>());
 
       var builder = services.AddIdentityCore<AppUser>();
@@ -59,6 +60,13 @@ namespace API
       identityBuilder.AddEntityFrameworkStores<DataContext>();
       identityBuilder.AddSignInManager<SignInManager<AppUser>>();
 
+      services.AddAuthorization(opt => {
+        opt.AddPolicy("IsActivityHost", policy => {
+          policy.Requirements.Add(new IsHostRequirement());
+        });
+      });
+      services.AddTransient<IAuthorizationHandler, IsHostRequirementHandler>();
+      
       var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["TokenKey"]));
       services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(opt =>
@@ -79,13 +87,6 @@ namespace API
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
       app.UseMiddleware<ErrorHandlingMIddleware>();
-
-      if (env.IsDevelopment())
-      {
-        //app.UseDeveloperExceptionPage();
-      }
-
-      //app.UseHttpsRedirection();
 
       app.UseRouting();
       app.UseCors("CorsPolicy");
