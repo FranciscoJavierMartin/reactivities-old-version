@@ -14,7 +14,6 @@ export default class ModalStore {
     body: null
   }
 
-  // TODO: Change type for React node
   @action openModal = (content: React.ReactNode) => {
     this.modal.open = true;
     this.modal.body = content;

@@ -16,7 +16,6 @@ const ActivityList: React.FC<IActivityListProp> = () => {
       {activitiesByDate.map(([group, activities]) => (
         <Fragment key={group}>
           <Label size='large' color='blue'>
-            {/* TODO: Check if works */}
             {format(Date.parse(group), 'eeee do MMMM')}
           </Label>
           <Item.Group divided>

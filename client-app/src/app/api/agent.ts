@@ -1,7 +1,7 @@
 import axios, { AxiosResponse, AxiosRequestConfig } from 'axios';
 import { IActivity } from '../models/activity';
 import { history } from '../..';
-import { NOT_FOUND_ROUTE } from '../constants/routes';
+import { NOT_FOUND_ROUTE, ACTIVITIES_ROUTE, ATTEND_ROUTE } from '../constants/routes';
 import { toast } from 'react-toastify';
 import { IUser, IUserFormValues } from '../models/user';
 import { JWT_LOCALSTORAGE } from '../constants/common';
@@ -66,7 +66,9 @@ const Activities = {
   create: (activity: IActivity) => request.post('/activities', activity),
   update: (activity: IActivity) =>
     request.put(`/activities/${activity.id}`, activity),
-  delete: (id: string) => request.del(`/activities/${id}`)
+  delete: (id: string) => request.del(`/activities/${id}`),
+  attend: (id: string) => request.post(`/${ACTIVITIES_ROUTE}/${id}/${ATTEND_ROUTE}`,{}),
+  unattend: (id: string) => request.del(`/${ACTIVITIES_ROUTE}/${id}/${ATTEND_ROUTE}`),
 };
 
 const User = {

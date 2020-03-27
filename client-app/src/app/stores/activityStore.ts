@@ -1,21 +1,22 @@
 import { SyntheticEvent } from 'react';
 import { observable, action, computed, runInAction } from 'mobx';
-import { IActivity } from './../models/activity';
+import { IActivity, IAttendee } from './../models/activity';
 import agent from '../api/agent';
 import { ACTIVITIES_ROUTE } from '../constants/routes';
 import { history } from '../..';
 import { toast } from 'react-toastify';
 import { RootStore } from './rootStore';
+import { setActivityProps, createAttendee } from '../common/util/util';
 
 export default class ActivityStore {
-
-  constructor(private rootStore: RootStore){}
+  constructor(private rootStore: RootStore) {}
 
   @observable activityRegistry = new Map<string, IActivity>();
   @observable activity: IActivity | null = null;
   @observable loadingInitial: boolean = false;
   @observable submitting: boolean = false;
   @observable target: string = '';
+  @observable loading: boolean = false;
 
   @computed get activitiesByDate() {
     return this.groupActivitiesByDate(
@@ -45,8 +46,10 @@ export default class ActivityStore {
       const activities = await agent.Activities.list();
       runInAction('loading activities', () => {
         activities.forEach((activity: IActivity) => {
-          activity.date = new Date(activity.date);
-          this.activityRegistry.set(activity.id, activity);
+          this.activityRegistry.set(
+            activity.id,
+            setActivityProps(activity, this.rootStore.userStore.user)
+          );
         });
       });
     } catch (error) {
@@ -68,8 +71,10 @@ export default class ActivityStore {
       try {
         selectedActivity = await agent.Activities.details(id);
         runInAction('getting activity', () => {
-          selectedActivity!.date = new Date(selectedActivity!.date);
-          this.activity = selectedActivity!;
+          this.activity = setActivityProps(
+            selectedActivity!,
+            this.rootStore.userStore.user
+          );
           this.activityRegistry.set(this.activity.id, selectedActivity!);
         });
       } catch (error) {
@@ -99,6 +104,13 @@ export default class ActivityStore {
     this.submitting = true;
     try {
       await agent.Activities.create(activity);
+      const attendee = createAttendee(this.rootStore.userStore.user!);
+      attendee.isHost = true;
+      let attendees = [];
+      attendees.push(attendee);
+      activity.attendees = attendees;
+      activity.isHost = true;
+      
       runInAction('creating activity', () => {
         this.activityRegistry.set(activity.id, activity);
       });
@@ -149,6 +161,51 @@ export default class ActivityStore {
       runInAction('delete activity finishing', () => {
         this.submitting = false;
         this.target = '';
+      });
+    }
+  };
+
+  @action attendActivity = async () => {
+    const attendee = createAttendee(this.rootStore.userStore.user!);
+    this.loading = false;
+
+    try {
+      await agent.Activities.attend(this.activity!.id);
+      runInAction(() => {
+        if (this.activity) {
+          this.activity.attendees.push(attendee);
+          this.activity.isGoing = true;
+          this.activityRegistry.set(this.activity.id, this.activity);
+        }
+      });
+    } catch (error) {
+      toast.error('Problem signing up to activity');
+    } finally {
+      runInAction(() => {
+        this.loading = false;
+      });
+    }
+  };
+
+  @action cancelAttendance = async () => {
+    this.loading = true;
+    try {
+      await agent.Activities.unattend(this.activity!.id);
+      runInAction(() => {
+        if (this.activity) {
+          this.activity.attendees = this.activity.attendees.filter(
+            (attendee: IAttendee) =>
+              attendee.username !== this.rootStore.userStore.user!.username
+          );
+          this.activity.isGoing = false;
+          this.activityRegistry.set(this.activity.id, this.activity);
+        }
+      });
+    } catch (error) {
+      toast.error('Problem cancelling attendance');
+    } finally {
+      runInAction(() => {
+        this.loading = false;
       });
     }
   };
