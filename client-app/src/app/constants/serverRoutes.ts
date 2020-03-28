@@ -1,0 +1,9 @@
+export const API_SERVER = 'http://localhost:5000/api';
+export const ACTIVITIES_SERVER_ROUTE = 'activities';
+export const USER_SERVER_ROUTE = 'user';
+export const PROFILES_SERVER_ROUTE = 'profiles';
+export const LOGIN_SERVER_ROUTE = '/user/login';
+export const REGISTER_SERVER_ROUTE = '/user/register';
+export const ATTEND_SERVER_ROUTE = 'attend';
+export const PHOTOS_SERVER_ROUTE = 'photos';
+export const SET_MAIN_SERVER_ROUTE = 'setMain';

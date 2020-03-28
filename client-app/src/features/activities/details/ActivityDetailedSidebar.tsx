@@ -13,7 +13,6 @@ interface IActivityDetailedSidebarProps {
 const ActivityDetailedSidebar: FC<IActivityDetailedSidebarProps> = ({
   attendees
 }) => {
-  const isHost = false;
   return (
     <Fragment>
       <Segment

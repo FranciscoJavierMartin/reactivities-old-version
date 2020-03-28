@@ -17,14 +17,14 @@ import {
   ACTIVITIES_ROUTE,
   CREATE_ACTIVITY_ROUTE,
   MANAGE_ACTIVITY_ROUTE,
-  LOGIN_ROUTE
+  PROFILE_ROUTE
 } from '../constants/routes';
 import NotFound from './NotFound';
 import { ToastContainer } from 'react-toastify';
-import LoginForm from '../../features/user/LoginForm';
 import { RootStoreContext } from '../stores/rootStore';
 import LoadingComponent from './LoadingComponent';
 import ModalContainer from '../common/modals/ModalContainer';
+import ProfilePage from '../../features/profiles/ProfilePage';
 
 const App: React.FC<RouteComponentProps> = ({ location }) => {
   const rootStore = useContext(RootStoreContext);
@@ -41,11 +41,11 @@ const App: React.FC<RouteComponentProps> = ({ location }) => {
     }
   }, [getUser, setAppLoaded, token]);
 
-  return !appLoaded ? 
-    <LoadingComponent content='Loading app...'/>
-  :(
+  return !appLoaded ? (
+    <LoadingComponent content='Loading app...' />
+  ) : (
     <Fragment>
-      <ModalContainer/>
+      <ModalContainer />
       <ToastContainer position='bottom-right' />
       <Route exact path={`/${HOME_ROUTE}`} component={HomePage} />
       <Route
@@ -76,7 +76,10 @@ const App: React.FC<RouteComponentProps> = ({ location }) => {
                   ]}
                   component={ActivityForm}
                 />
-                <Route path={`/${LOGIN_ROUTE}`} component={LoginForm} />
+                <Route
+                  path={`/${PROFILE_ROUTE}/:username`}
+                  component={ProfilePage}
+                />
                 <Route component={NotFound} />
               </Switch>
             </Container>

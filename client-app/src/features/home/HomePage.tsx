@@ -2,9 +2,7 @@ import React, { useContext, Fragment } from 'react';
 import { Container, Segment, Header, Image, Button } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
 import {
-  LOGIN_ROUTE,
   ACTIVITIES_ROUTE,
-  REGISTER_ROUTE
 } from '../../app/constants/routes';
 import { RootStoreContext } from '../../app/stores/rootStore';
 import LoginForm from '../user/LoginForm';

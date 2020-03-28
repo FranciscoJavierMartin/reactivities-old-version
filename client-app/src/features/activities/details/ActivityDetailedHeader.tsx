@@ -3,7 +3,10 @@ import { observer } from 'mobx-react-lite';
 import { Segment, Image, Item, Header, Button } from 'semantic-ui-react';
 import { IActivity } from '../../../app/models/activity';
 import { Link } from 'react-router-dom';
-import { MANAGE_ACTIVITY_ROUTE } from '../../../app/constants/routes';
+import {
+  MANAGE_ACTIVITY_ROUTE,
+  PROFILE_ROUTE
+} from '../../../app/constants/routes';
 import { format } from 'date-fns';
 import { MAIN_COLOR } from '../../../app/constants/common';
 import { RootStoreContext } from '../../../app/stores/rootStore';
@@ -30,6 +33,8 @@ const ActivityDetailedHeader: React.FC<IActivityDetailHeaderProps> = ({
 }) => {
   const rootStore = useContext(RootStoreContext);
   const { attendActivity, cancelAttendance, loading } = rootStore.activityStore;
+  const host = activity.attendees.find(x => x.isHost)!;
+
   return (
     <Segment.Group>
       <Segment basic attached='top' style={{ padding: '0' }}>
@@ -49,7 +54,10 @@ const ActivityDetailedHeader: React.FC<IActivityDetailHeaderProps> = ({
                 />
                 <p>{format(activity.date, 'eeee do MMMM')}</p>
                 <p>
-                  Hosted by <strong>Bob</strong>
+                  Hosted by{' '}
+                  <Link to={`/${PROFILE_ROUTE}/${host.username}`} style={{color: 'white'}}>
+                    <strong>{host.displayName}</strong>
+                  </Link>
                 </p>
               </Item.Content>
             </Item>
@@ -67,9 +75,13 @@ const ActivityDetailedHeader: React.FC<IActivityDetailHeaderProps> = ({
             Manage event
           </Button>
         ) : activity.isGoing ? (
-          <Button loading={loading} onClick={cancelAttendance}>Cancel attendance</Button>
+          <Button loading={loading} onClick={cancelAttendance}>
+            Cancel attendance
+          </Button>
         ) : (
-          <Button loading={loading} onClick={attendActivity} color={MAIN_COLOR}>Join activity</Button>
+          <Button loading={loading} onClick={attendActivity} color={MAIN_COLOR}>
+            Join activity
+          </Button>
         )}
       </Segment>
     </Segment.Group>

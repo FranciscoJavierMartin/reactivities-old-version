@@ -1,24 +1,39 @@
+import { IProfile, IPhoto } from './../models/profile';
 import axios, { AxiosResponse, AxiosRequestConfig } from 'axios';
 import { IActivity } from '../models/activity';
 import { history } from '../..';
-import { NOT_FOUND_ROUTE, ACTIVITIES_ROUTE, ATTEND_ROUTE } from '../constants/routes';
+import { NOT_FOUND_ROUTE } from '../constants/routes';
 import { toast } from 'react-toastify';
 import { IUser, IUserFormValues } from '../models/user';
 import { JWT_LOCALSTORAGE } from '../constants/common';
+import {
+  ACTIVITIES_SERVER_ROUTE,
+  ATTEND_SERVER_ROUTE,
+  USER_SERVER_ROUTE,
+  LOGIN_SERVER_ROUTE,
+  REGISTER_SERVER_ROUTE,
+  PROFILES_SERVER_ROUTE,
+  API_SERVER,
+  PHOTOS_SERVER_ROUTE,
+  SET_MAIN_SERVER_ROUTE
+} from '../constants/serverRoutes';
 
-axios.defaults.baseURL = 'http://localhost:5000/api';
+axios.defaults.baseURL = API_SERVER;
 
-axios.interceptors.request.use((config: AxiosRequestConfig) => {
-  const token = window.localStorage.getItem(JWT_LOCALSTORAGE);
+axios.interceptors.request.use(
+  (config: AxiosRequestConfig) => {
+    const token = window.localStorage.getItem(JWT_LOCALSTORAGE);
 
-  if(token){
-    config.headers.Authorization = `Bearer ${token}`;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  error => {
+    return Promise.reject(error);
   }
-
-  return config;
-}, (error) => {
-  return Promise.reject(error);
-});
+);
 
 axios.interceptors.response.use(undefined, error => {
   if (error.message === 'Network Error' && !error.response) {
@@ -57,28 +72,55 @@ const request = {
       .then(responseBody),
   post: (url: string, body: {}) => axios.post(url, body).then(responseBody),
   put: (url: string, body: {}) => axios.put(url, body).then(responseBody),
-  del: (url: string) => axios.delete(url).then(responseBody)
+  del: (url: string) => axios.delete(url).then(responseBody),
+  postForm: (url: string, file: Blob) => {
+    const formData = new FormData();
+    formData.append('File', file);
+    return axios
+      .post(url, formData, {
+        headers: { 'Content-type': 'multipart/form-data' }
+      })
+      .then(responseBody);
+  }
 };
 
 const Activities = {
-  list: (): Promise<IActivity[]> => request.get('/activities'),
-  details: (id: string) => request.get(`/activities/${id}`),
-  create: (activity: IActivity) => request.post('/activities', activity),
+  list: (): Promise<IActivity[]> => request.get(`/${ACTIVITIES_SERVER_ROUTE}`),
+  details: (id: string) => request.get(`/${ACTIVITIES_SERVER_ROUTE}/${id}`),
+  create: (activity: IActivity) =>
+    request.post(`/${ACTIVITIES_SERVER_ROUTE}`, activity),
   update: (activity: IActivity) =>
-    request.put(`/activities/${activity.id}`, activity),
-  delete: (id: string) => request.del(`/activities/${id}`),
-  attend: (id: string) => request.post(`/${ACTIVITIES_ROUTE}/${id}/${ATTEND_ROUTE}`,{}),
-  unattend: (id: string) => request.del(`/${ACTIVITIES_ROUTE}/${id}/${ATTEND_ROUTE}`),
+    request.put(`/${ACTIVITIES_SERVER_ROUTE}/${activity.id}`, activity),
+  delete: (id: string) => request.del(`/${ACTIVITIES_SERVER_ROUTE}/${id}`),
+  attend: (id: string) =>
+    request.post(
+      `/${ACTIVITIES_SERVER_ROUTE}/${id}/${ATTEND_SERVER_ROUTE}`,
+      {}
+    ),
+  unattend: (id: string) =>
+    request.del(`/${ACTIVITIES_SERVER_ROUTE}/${id}/${ATTEND_SERVER_ROUTE}`)
 };
 
 const User = {
-  current: (): Promise<IUser> => request.get('/user'),
+  current: (): Promise<IUser> => request.get(`/${USER_SERVER_ROUTE}`),
   login: (user: IUserFormValues): Promise<IUser> =>
-    request.post(`/user/login`, user),
+    request.post(LOGIN_SERVER_ROUTE, user),
   register: (user: IUserFormValues): Promise<IUser> =>
-    request.post(`/user/register`, user)
+    request.post(REGISTER_SERVER_ROUTE, user)
 };
+
+const Profiles = {
+  get: (username: string): Promise<IProfile> =>
+    request.get(`/${PROFILES_SERVER_ROUTE}/${username}`),
+  uploadPhoto: (photo: Blob): Promise<IPhoto> =>
+    request.postForm(`/${PHOTOS_SERVER_ROUTE}`, photo),
+  setMainPhoto: (id: string) =>
+    request.post(`/${PHOTOS_SERVER_ROUTE}/${id}/${SET_MAIN_SERVER_ROUTE}`, {}),
+  deletePhoto: (id: string) => request.del(`/${PHOTOS_SERVER_ROUTE}/${id}`)
+};
+
 export default {
   Activities,
   User,
+  Profiles
 };
