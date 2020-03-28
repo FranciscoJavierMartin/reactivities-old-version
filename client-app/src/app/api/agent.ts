@@ -2,7 +2,7 @@ import { IProfile, IPhoto } from './../models/profile';
 import axios, { AxiosResponse, AxiosRequestConfig } from 'axios';
 import { IActivity } from '../models/activity';
 import { history } from '../..';
-import { NOT_FOUND_ROUTE } from '../constants/routes';
+import { NOT_FOUND_ROUTE, PROFILE_ROUTE } from '../constants/routes';
 import { toast } from 'react-toastify';
 import { IUser, IUserFormValues } from '../models/user';
 import { JWT_LOCALSTORAGE } from '../constants/common';
@@ -59,6 +59,7 @@ axios.interceptors.response.use(undefined, error => {
 
 const responseBody = (response: AxiosResponse) => response.data;
 
+// TODO: Remove when goes to production
 const sleep = (ms: number) => (response: AxiosResponse) =>
   new Promise<AxiosResponse>(resolve =>
     setTimeout(() => resolve(response), ms)
@@ -87,17 +88,18 @@ const request = {
 const Activities = {
   list: (): Promise<IActivity[]> => request.get(`/${ACTIVITIES_SERVER_ROUTE}`),
   details: (id: string) => request.get(`/${ACTIVITIES_SERVER_ROUTE}/${id}`),
-  create: (activity: IActivity) =>
+  create: (activity: IActivity): Promise<void> =>
     request.post(`/${ACTIVITIES_SERVER_ROUTE}`, activity),
-  update: (activity: IActivity) =>
+  update: (activity: IActivity): Promise<void> =>
     request.put(`/${ACTIVITIES_SERVER_ROUTE}/${activity.id}`, activity),
-  delete: (id: string) => request.del(`/${ACTIVITIES_SERVER_ROUTE}/${id}`),
-  attend: (id: string) =>
+  delete: (id: string): Promise<void> =>
+    request.del(`/${ACTIVITIES_SERVER_ROUTE}/${id}`),
+  attend: (id: string): Promise<void> =>
     request.post(
       `/${ACTIVITIES_SERVER_ROUTE}/${id}/${ATTEND_SERVER_ROUTE}`,
       {}
     ),
-  unattend: (id: string) =>
+  unattend: (id: string): Promise<void> =>
     request.del(`/${ACTIVITIES_SERVER_ROUTE}/${id}/${ATTEND_SERVER_ROUTE}`)
 };
 
@@ -114,9 +116,12 @@ const Profiles = {
     request.get(`/${PROFILES_SERVER_ROUTE}/${username}`),
   uploadPhoto: (photo: Blob): Promise<IPhoto> =>
     request.postForm(`/${PHOTOS_SERVER_ROUTE}`, photo),
-  setMainPhoto: (id: string) =>
+  setMainPhoto: (id: string): Promise<void> =>
     request.post(`/${PHOTOS_SERVER_ROUTE}/${id}/${SET_MAIN_SERVER_ROUTE}`, {}),
-  deletePhoto: (id: string) => request.del(`/${PHOTOS_SERVER_ROUTE}/${id}`)
+  deletePhoto: (id: string): Promise<void> =>
+    request.del(`/${PHOTOS_SERVER_ROUTE}/${id}`),
+  updateProfile: (profile: Partial<IProfile>): Promise<void> =>
+    request.put(`/${PROFILES_SERVER_ROUTE}`, profile)
 };
 
 export default {
