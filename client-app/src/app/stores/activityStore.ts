@@ -1,12 +1,18 @@
 import { SyntheticEvent } from 'react';
 import { observable, action, computed, runInAction } from 'mobx';
-import { IActivity, IAttendee } from './../models/activity';
+import { IActivity, IAttendee, IComment } from './../models/activity';
 import agent from '../api/agent';
 import { ACTIVITIES_ROUTE } from '../constants/routes';
 import { history } from '../..';
 import { toast } from 'react-toastify';
 import { RootStore } from './rootStore';
 import { setActivityProps, createAttendee } from '../common/util/util';
+import {
+  HubConnection,
+  HubConnectionBuilder,
+  LogLevel
+} from '@microsoft/signalr';
+import { SIGNAL_R_SERVER } from '../constants/serverRoutes';
 
 export default class ActivityStore {
   constructor(private rootStore: RootStore) {}
@@ -17,6 +23,7 @@ export default class ActivityStore {
   @observable submitting: boolean = false;
   @observable target: string = '';
   @observable loading: boolean = false;
+  @observable.ref hubConnection: HubConnection | null = null;
 
   @computed get activitiesByDate() {
     return this.groupActivitiesByDate(
@@ -108,9 +115,10 @@ export default class ActivityStore {
       attendee.isHost = true;
       let attendees = [];
       attendees.push(attendee);
+      activity.comments = [];
       activity.attendees = attendees;
       activity.isHost = true;
-      
+
       runInAction('creating activity', () => {
         this.activityRegistry.set(activity.id, activity);
       });
@@ -208,5 +216,51 @@ export default class ActivityStore {
         this.loading = false;
       });
     }
+  };
+
+  @action createHubConnection = (activityId: string) => {
+    this.hubConnection = new HubConnectionBuilder()
+      .withUrl(SIGNAL_R_SERVER, {
+        accessTokenFactory: () => this.rootStore.commonStore.token!
+      })
+      .configureLogging(LogLevel.Information)
+      .build();
+
+    this.hubConnection
+      .start()
+      .then(() => console.log(this.hubConnection!.state))
+      .then(() => {
+        console.log('Attempting to join group');
+        this.hubConnection!.invoke('AddToGroup', activityId);
+      })
+      .catch(error => console.error('Error establishing connection: ', error));
+
+    this.hubConnection.on('ReceiveComment', (comment: IComment) => {
+      runInAction(() => {
+        this.activity!.comments.push(comment);
+      });
+    });
+
+    this.hubConnection.on('Send', message => {
+      //TODO: Remove when goes to production
+      toast.info(message);
+    });
+  };
+
+  @action stopHubConnection = () => {
+    this.hubConnection!.invoke('RemoveFromGroup', this.activity!.id)
+      .then(() => {
+        this.hubConnection!.stop();
+      })
+      .catch(error => console.error(error));
+  };
+
+  // TODO: Type properly
+  @action addComment = async (values: any) => {
+    console.log(values);
+    values.activityId = this.activity!.id;
+    try {
+      await this.hubConnection!.invoke('SendComment', values);
+    } catch (error) {}
   };
 }

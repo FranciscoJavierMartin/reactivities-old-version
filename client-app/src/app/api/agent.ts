@@ -2,7 +2,7 @@ import { IProfile, IPhoto } from './../models/profile';
 import axios, { AxiosResponse, AxiosRequestConfig } from 'axios';
 import { IActivity } from '../models/activity';
 import { history } from '../..';
-import { NOT_FOUND_ROUTE, PROFILE_ROUTE } from '../constants/routes';
+import { NOT_FOUND_ROUTE } from '../constants/routes';
 import { toast } from 'react-toastify';
 import { IUser, IUserFormValues } from '../models/user';
 import { JWT_LOCALSTORAGE } from '../constants/common';

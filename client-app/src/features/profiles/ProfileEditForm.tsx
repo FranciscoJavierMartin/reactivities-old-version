@@ -19,15 +19,18 @@ interface IProfileEditFormProps {
 const ProfileEditForm: FC<IProfileEditFormProps> = ({
   updateProfile,
   profile,
-  finishEditMode,
+  finishEditMode
 }) => {
   return (
     <FinalForm
-      onSubmit={(profile: IProfile) => {updateProfile(profile); finishEditMode(); }}
+      onSubmit={updateProfile}
       validate={validate}
       initialValues={profile!}
       render={({ handleSubmit, invalid, pristine, submitting }) => (
-        <Form onSubmit={handleSubmit} error>
+        <Form
+          onSubmit={() => handleSubmit()!.then(() => finishEditMode())}
+          error
+        >
           <Field
             name='displayName'
             component={TextInput}
