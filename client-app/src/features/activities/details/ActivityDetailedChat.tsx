@@ -52,8 +52,8 @@ const ActivityDetailedChat = () => {
                     {comment.displayName}
                   </Comment.Author>
                   <Comment.Metadata>
-                    {/*<div>{formatDistance(comment.createdAt, new Date())}</div>*/}
-                    <div>{comment.createdAt.toLocaleString()}</div>
+                    <div>{formatDistance(new Date(2015, 0, 1), new Date())}</div>
+                    {/*<div>{comment.createdAt.toLocaleString()}</div>*/}
                   </Comment.Metadata>
                   <Comment.Text>{comment.body}</Comment.Text>
                 </Comment.Content>

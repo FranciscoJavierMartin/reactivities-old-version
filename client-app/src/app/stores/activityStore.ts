@@ -243,7 +243,7 @@ export default class ActivityStore {
 
     this.hubConnection.on('Send', message => {
       //TODO: Remove when goes to production
-      toast.info(message);
+      //toast.info(message);
     });
   };
 
