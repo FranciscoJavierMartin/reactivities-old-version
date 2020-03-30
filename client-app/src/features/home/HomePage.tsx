@@ -1,14 +1,14 @@
 import React, { useContext, Fragment } from 'react';
 import { Container, Segment, Header, Image, Button } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
-import {
-  ACTIVITIES_ROUTE,
-} from '../../app/constants/routes';
+import { ACTIVITIES_ROUTE } from '../../app/constants/routes';
 import { RootStoreContext } from '../../app/stores/rootStore';
 import LoginForm from '../user/LoginForm';
 import RegisterForm from '../user/RegisterForm';
+import { JWT_LOCALSTORAGE } from '../../app/constants/common';
 
 const HomePage = () => {
+  const token = window.localStorage.getItem(JWT_LOCALSTORAGE);
   const rootStore = useContext(RootStoreContext);
   const { isLoggedIn, user } = rootStore.userStore;
   const { openModal } = rootStore.modalStore;
@@ -24,7 +24,7 @@ const HomePage = () => {
           />
           Reactivities
         </Header>
-        {isLoggedIn && user ? (
+        {isLoggedIn && user && token ? (
           <Fragment>
             <Header
               as='h2'

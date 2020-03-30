@@ -111,7 +111,7 @@ export default class ActivityStore {
     }
   };
 
-  @action loadActivity = async (id: string) => {
+  @action loadActivity = async (id: string): Promise<IActivity> => {
     let selectedActivity = this.getActivity(id);
 
     if (selectedActivity) {

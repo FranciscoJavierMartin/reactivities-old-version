@@ -2,7 +2,7 @@ import { IProfile, IPhoto, IUserActivity } from './../models/profile';
 import axios, { AxiosResponse, AxiosRequestConfig } from 'axios';
 import { IActivity, IActivitiesEnvelope } from '../models/activity';
 import { history } from '../..';
-import { NOT_FOUND_ROUTE } from '../constants/routes';
+import { NOT_FOUND_ROUTE, HOME_ROUTE } from '../constants/routes';
 import { toast } from 'react-toastify';
 import { IUser, IUserFormValues } from '../models/user';
 import { JWT_LOCALSTORAGE } from '../constants/common';
@@ -40,10 +40,19 @@ axios.interceptors.response.use(undefined, error => {
   if (error.message === 'Network Error' && !error.response) {
     toast.error('Network error - make sure API is running');
   } else {
-    const { status, data, config } = error.response;
+    const { status, data, config, headers } = error.response;
 
     if (status === 404) {
       history.push(`/${NOT_FOUND_ROUTE}`);
+    } else if (
+      status === 401 &&
+      headers['www-authenticate'].includes(
+        'Bearer error="invalid_token", error_description="The token expired at'
+      )
+    ) {
+      window.localStorage.removeItem(JWT_LOCALSTORAGE);
+      history.push(HOME_ROUTE);
+      toast.info('Your session has expired, please login again');
     } else if (
       status === 400 &&
       config.method === 'get' &&
@@ -92,7 +101,8 @@ const Activities = {
       .get(`/${ACTIVITIES_SERVER_ROUTE}`, { params })
       .then(sleep(1000))
       .then(responseBody),
-  details: (id: string):Promise<IActivity> => request.get(`/${ACTIVITIES_SERVER_ROUTE}/${id}`),
+  details: (id: string): Promise<IActivity> =>
+    request.get(`/${ACTIVITIES_SERVER_ROUTE}/${id}`),
   create: (activity: IActivity): Promise<void> =>
     request.post(`/${ACTIVITIES_SERVER_ROUTE}`, activity),
   update: (activity: IActivity): Promise<void> =>
@@ -135,7 +145,10 @@ const Profiles = {
     request.get(
       `/${PROFILES_SERVER_ROUTE}/${username}/${FOLLOW_SERVER_ROUTE}?predicate=${predicate}`
     ),
-  listActivities: (username: string, predicate: string): Promise<IUserActivity[]> =>
+  listActivities: (
+    username: string,
+    predicate: string
+  ): Promise<IUserActivity[]> =>
     request.get(
       `/${PROFILES_SERVER_ROUTE}/${username}/${ACTIVITIES_SERVER_ROUTE}?predicate=${predicate}`
     )

@@ -25,6 +25,7 @@ import { RootStoreContext } from '../stores/rootStore';
 import LoadingComponent from './LoadingComponent';
 import ModalContainer from '../common/modals/ModalContainer';
 import ProfilePage from '../../features/profiles/ProfilePage';
+import PrivateRoute from './PrivateRoute';
 
 const App: React.FC<RouteComponentProps> = ({ location }) => {
   const rootStore = useContext(RootStoreContext);
@@ -59,16 +60,16 @@ const App: React.FC<RouteComponentProps> = ({ location }) => {
               }}
             >
               <Switch>
-                <Route
+                <PrivateRoute
                   exact
                   path={`/${ACTIVITIES_ROUTE}`}
                   component={ActivityDashboard}
                 />
-                <Route
+                <PrivateRoute
                   path={`/${ACTIVITIES_ROUTE}/:id`}
                   component={ActivityDetails}
                 />
-                <Route
+                <PrivateRoute
                   key={location.key}
                   path={[
                     `/${CREATE_ACTIVITY_ROUTE}`,
@@ -76,7 +77,7 @@ const App: React.FC<RouteComponentProps> = ({ location }) => {
                   ]}
                   component={ActivityForm}
                 />
-                <Route
+                <PrivateRoute
                   path={`/${PROFILE_ROUTE}/:username`}
                   component={ProfilePage}
                 />
