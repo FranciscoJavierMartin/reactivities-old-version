@@ -1,5 +1,3 @@
-export const API_SERVER = 'http://localhost:5000/api';
-export const SIGNAL_R_SERVER = 'http://localhost:5000/chat';
 export const ACTIVITIES_SERVER_ROUTE = 'activities';
 export const USER_SERVER_ROUTE = 'user';
 export const PROFILES_SERVER_ROUTE = 'profiles';

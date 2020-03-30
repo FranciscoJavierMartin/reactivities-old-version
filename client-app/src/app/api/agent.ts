@@ -13,13 +13,12 @@ import {
   LOGIN_SERVER_ROUTE,
   REGISTER_SERVER_ROUTE,
   PROFILES_SERVER_ROUTE,
-  API_SERVER,
   PHOTOS_SERVER_ROUTE,
   SET_MAIN_SERVER_ROUTE,
   FOLLOW_SERVER_ROUTE
 } from '../constants/serverRoutes';
 
-axios.defaults.baseURL = API_SERVER;
+axios.defaults.baseURL = process.env.REACT_APP_API_URL;
 
 axios.interceptors.request.use(
   (config: AxiosRequestConfig) => {
@@ -69,17 +68,10 @@ axios.interceptors.response.use(undefined, error => {
 
 const responseBody = (response: AxiosResponse) => response.data;
 
-// TODO: Remove when goes to production
-const sleep = (ms: number) => (response: AxiosResponse) =>
-  new Promise<AxiosResponse>(resolve =>
-    setTimeout(() => resolve(response), ms)
-  );
-
 const request = {
   get: (url: string) =>
     axios
       .get(url)
-      .then(sleep(1000))
       .then(responseBody),
   post: (url: string, body: {}) => axios.post(url, body).then(responseBody),
   put: (url: string, body: {}) => axios.put(url, body).then(responseBody),
@@ -99,7 +91,6 @@ const Activities = {
   list: (params: URLSearchParams): Promise<IActivitiesEnvelope> =>
     axios
       .get(`/${ACTIVITIES_SERVER_ROUTE}`, { params })
-      .then(sleep(1000))
       .then(responseBody),
   details: (id: string): Promise<IActivity> =>
     request.get(`/${ACTIVITIES_SERVER_ROUTE}/${id}`),

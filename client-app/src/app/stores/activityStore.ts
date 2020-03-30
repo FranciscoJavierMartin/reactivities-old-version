@@ -17,7 +17,6 @@ import {
   HubConnectionBuilder,
   LogLevel
 } from '@microsoft/signalr';
-import { SIGNAL_R_SERVER } from '../constants/serverRoutes';
 
 const LIMIT = 2;
 
@@ -89,8 +88,9 @@ export default class ActivityStore {
   @action loadActivities = async () => {
     this.loadingInitial = true;
     try {
-      const activitiesEnvelope: IActivitiesEnvelope = await agent.Activities
-        .list(this.axiosParams);
+      const activitiesEnvelope: IActivitiesEnvelope = await agent.Activities.list(
+        this.axiosParams
+      );
       const { activities, activityCount } = activitiesEnvelope;
 
       runInAction('loading activities', () => {
@@ -263,7 +263,7 @@ export default class ActivityStore {
 
   @action createHubConnection = (activityId: string) => {
     this.hubConnection = new HubConnectionBuilder()
-      .withUrl(SIGNAL_R_SERVER, {
+      .withUrl(process.env.REACT_APP_API_URL!, {
         accessTokenFactory: () => this.rootStore.commonStore.token!
       })
       .configureLogging(LogLevel.Information)
