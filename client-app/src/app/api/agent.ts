@@ -15,7 +15,8 @@ import {
   PROFILES_SERVER_ROUTE,
   API_SERVER,
   PHOTOS_SERVER_ROUTE,
-  SET_MAIN_SERVER_ROUTE
+  SET_MAIN_SERVER_ROUTE,
+  FOLLOW_SERVER_ROUTE
 } from '../constants/serverRoutes';
 
 axios.defaults.baseURL = API_SERVER;
@@ -121,7 +122,15 @@ const Profiles = {
   deletePhoto: (id: string): Promise<void> =>
     request.del(`/${PHOTOS_SERVER_ROUTE}/${id}`),
   updateProfile: (profile: Partial<IProfile>): Promise<void> =>
-    request.put(`/${PROFILES_SERVER_ROUTE}`, profile)
+    request.put(`/${PROFILES_SERVER_ROUTE}`, profile),
+  follow: (username: string): Promise<void> =>
+    request.post(`/${PROFILES_SERVER_ROUTE}/${username}/follow`, {}),
+  unfollow: (username: string): Promise<void> =>
+    request.del(`/${PROFILES_SERVER_ROUTE}/${username}/follow`),
+  listFollowing: (username: string, predicate: string) =>
+    request.get(
+      `/${PROFILES_SERVER_ROUTE}/${username}/${FOLLOW_SERVER_ROUTE}?predicate=${predicate}`
+    )
 };
 
 export default {

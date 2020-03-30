@@ -8,3 +8,4 @@ export const REGISTER_SERVER_ROUTE = '/user/register';
 export const ATTEND_SERVER_ROUTE = 'attend';
 export const PHOTOS_SERVER_ROUTE = 'photos';
 export const SET_MAIN_SERVER_ROUTE = 'setMain';
+export const FOLLOW_SERVER_ROUTE = 'follow';

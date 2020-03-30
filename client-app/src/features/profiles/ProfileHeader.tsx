@@ -14,9 +14,19 @@ import { observer } from 'mobx-react-lite';
 
 interface IProfileHeaderProps {
   profile: IProfile;
+  follow: (username: string) => void;
+  unfollow: (username: string) => void;
+  isCurrentUser: boolean;
+  loading: boolean;
 }
 
-const ProfileHeader: FC<IProfileHeaderProps> = ({ profile }) => {
+const ProfileHeader: FC<IProfileHeaderProps> = ({
+  profile,
+  isCurrentUser,
+  loading,
+  unfollow,
+  follow
+}) => {
   return (
     <Segment>
       <Grid>
@@ -36,23 +46,35 @@ const ProfileHeader: FC<IProfileHeaderProps> = ({ profile }) => {
         </Grid.Column>
         <Grid.Column width={4}>
           <Statistic.Group widths={2}>
-            <Statistic label='Followers' value='5' />
-            <Statistic label='Following' value='42' />
+            <Statistic label='Followers' value={profile.followersCount} />
+            <Statistic label='Following' value={profile.followingCount} />
           </Statistic.Group>
           <Divider />
-          <Reveal animated='move'>
-            <Reveal.Content visible style={{ width: '100%' }}>
-              <Button fluid color='teal' content='Following' />
-            </Reveal.Content>
-            <Reveal.Content hidden>
-              <Button
-                fluid
-                basic
-                content={true ? 'Unfollow' : 'Follow'}
-                color={true ? 'red' : 'green'}
-              />
-            </Reveal.Content>
-          </Reveal>
+          {!isCurrentUser && (
+            <Reveal animated='move'>
+              <Reveal.Content visible style={{ width: '100%' }}>
+                <Button
+                  fluid
+                  color='teal'
+                  content={profile.following ? 'Following' : 'Not following'}
+                />
+              </Reveal.Content>
+              <Reveal.Content hidden>
+                <Button
+                  fluid
+                  basic
+                  loading={loading}
+                  content={profile.following ? 'Unfollow' : 'Follow'}
+                  color={profile.following ? 'red' : 'green'}
+                  onClick={
+                    profile.following
+                      ? () => unfollow(profile.username)
+                      : () => follow(profile.username)
+                  }
+                />
+              </Reveal.Content>
+            </Reveal>
+          )}
         </Grid.Column>
       </Grid>
     </Segment>

@@ -6,6 +6,11 @@ interface IActivityListItemAttendeesProps {
   attendees: IAttendee[];
 }
 
+const styles = {
+  borderColor: 'orange',
+  borderWidth: 2
+};
+
 const ActivityListItemAttendees: FC<IActivityListItemAttendeesProps> = ({
   attendees
 }) => {
@@ -15,7 +20,15 @@ const ActivityListItemAttendees: FC<IActivityListItemAttendeesProps> = ({
         <List.Item key={attendee.username}>
           <Popup
             header={attendee.displayName}
-            trigger={<Image size='mini' circular src={attendee.image || '/assets/user.png'} />}
+            trigger={
+              <Image
+                size='mini'
+                circular
+                src={attendee.image || '/assets/user.png'}
+                bordered
+                style={attendee.following ? styles : null}
+              />
+            }
           />
         </List.Item>
       ))}
