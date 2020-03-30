@@ -99,6 +99,25 @@ namespace API
             {
               var accessToken = context.Request.Query["access_token"];
               var path = context.HttpContext.Request.Path;
+              Console.WriteLine("");
+              Console.WriteLine("");
+              Console.WriteLine("");
+              Console.WriteLine("");
+              Console.WriteLine("");
+              Console.WriteLine("");
+              Console.WriteLine("");
+              Console.WriteLine("");
+              Console.WriteLine("");
+              Console.WriteLine("");
+              Console.WriteLine("Path "+path);
+              Console.WriteLine("");
+              Console.WriteLine("");
+              Console.WriteLine("");
+              Console.WriteLine("");
+              Console.WriteLine("");
+              Console.WriteLine("");
+              Console.WriteLine("");
+              Console.WriteLine("");
               if (!string.IsNullOrEmpty(accessToken) && (path.StartsWithSegments("/chat")))
               {
                 context.Token = accessToken;
@@ -119,6 +138,9 @@ namespace API
     {
       app.UseMiddleware<ErrorHandlingMIddleware>();
 
+      app.UseDefaultFiles();
+      app.UseStaticFiles();
+
       app.UseRouting();
       app.UseCors("CorsPolicy");
 
@@ -129,6 +151,7 @@ namespace API
       {
         endpoints.MapControllers();
         endpoints.MapHub<ChatHub>("/chat");
+        endpoints.MapFallbackToController("Index", "Fallback");
       });
     }
   }
