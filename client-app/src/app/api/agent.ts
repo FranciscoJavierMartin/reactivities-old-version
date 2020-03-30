@@ -1,6 +1,6 @@
-import { IProfile, IPhoto } from './../models/profile';
+import { IProfile, IPhoto, IUserActivity } from './../models/profile';
 import axios, { AxiosResponse, AxiosRequestConfig } from 'axios';
-import { IActivity } from '../models/activity';
+import { IActivity, IActivitiesEnvelope } from '../models/activity';
 import { history } from '../..';
 import { NOT_FOUND_ROUTE } from '../constants/routes';
 import { toast } from 'react-toastify';
@@ -87,8 +87,12 @@ const request = {
 };
 
 const Activities = {
-  list: (): Promise<IActivity[]> => request.get(`/${ACTIVITIES_SERVER_ROUTE}`),
-  details: (id: string) => request.get(`/${ACTIVITIES_SERVER_ROUTE}/${id}`),
+  list: (params: URLSearchParams): Promise<IActivitiesEnvelope> =>
+    axios
+      .get(`/${ACTIVITIES_SERVER_ROUTE}`, { params })
+      .then(sleep(1000))
+      .then(responseBody),
+  details: (id: string):Promise<IActivity> => request.get(`/${ACTIVITIES_SERVER_ROUTE}/${id}`),
   create: (activity: IActivity): Promise<void> =>
     request.post(`/${ACTIVITIES_SERVER_ROUTE}`, activity),
   update: (activity: IActivity): Promise<void> =>
@@ -127,9 +131,13 @@ const Profiles = {
     request.post(`/${PROFILES_SERVER_ROUTE}/${username}/follow`, {}),
   unfollow: (username: string): Promise<void> =>
     request.del(`/${PROFILES_SERVER_ROUTE}/${username}/follow`),
-  listFollowing: (username: string, predicate: string) =>
+  listFollowing: (username: string, predicate: string): Promise<IProfile[]> =>
     request.get(
       `/${PROFILES_SERVER_ROUTE}/${username}/${FOLLOW_SERVER_ROUTE}?predicate=${predicate}`
+    ),
+  listActivities: (username: string, predicate: string): Promise<IUserActivity[]> =>
+    request.get(
+      `/${PROFILES_SERVER_ROUTE}/${username}/${ACTIVITIES_SERVER_ROUTE}?predicate=${predicate}`
     )
 };
 

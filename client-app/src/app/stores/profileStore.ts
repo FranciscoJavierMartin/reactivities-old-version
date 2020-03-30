@@ -1,4 +1,4 @@
-import { IProfile, IPhoto } from './../models/profile';
+import { IProfile, IPhoto, IUserActivity } from './../models/profile';
 import { RootStore } from './rootStore';
 import { observable, action, runInAction, computed, reaction } from 'mobx';
 import agent from '../api/agent';
@@ -25,6 +25,8 @@ export default class ProfileStore {
   @observable loading: boolean = false;
   @observable followings: IProfile[] = [];
   @observable activeTab: number = 0;
+  @observable userActivities: IUserActivity[] = [];
+  @observable loadingActivities: boolean = false;
 
   @computed get isCurrentUser(): boolean {
     return (
@@ -189,4 +191,22 @@ export default class ProfileStore {
   @action setActiveTab = (activeIndex: number) => {
     this.activeTab = activeIndex;
   };
+
+  // TODO: Check the predicate param to remove the optional
+  @action loadUserActivities = async (username: string, predicate?: string) => {
+    this.loadingActivities = true;
+
+    try {
+      const activities = await agent.Profiles.listActivities(username, predicate!);
+      runInAction(() => {
+        this.userActivities = activities;
+      })
+    } catch (error) {
+      toast.error('Problem loading activities');
+    } finally{
+      runInAction(() => {
+        this.loadingActivities = false;
+      })
+    }
+  }
 }

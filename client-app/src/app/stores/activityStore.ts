@@ -1,6 +1,11 @@
 import { SyntheticEvent } from 'react';
-import { observable, action, computed, runInAction } from 'mobx';
-import { IActivity, IAttendee, IComment } from './../models/activity';
+import { observable, action, computed, runInAction, reaction } from 'mobx';
+import {
+  IActivity,
+  IAttendee,
+  IComment,
+  IActivitiesEnvelope
+} from './../models/activity';
 import agent from '../api/agent';
 import { ACTIVITIES_ROUTE } from '../constants/routes';
 import { history } from '../..';
@@ -14,8 +19,19 @@ import {
 } from '@microsoft/signalr';
 import { SIGNAL_R_SERVER } from '../constants/serverRoutes';
 
+const LIMIT = 2;
+
 export default class ActivityStore {
-  constructor(private rootStore: RootStore) {}
+  constructor(private rootStore: RootStore) {
+    reaction(
+      () => this.predicate.keys(),
+      () => {
+        this.page = 0;
+        this.activityRegistry.clear();
+        this.loadActivities();
+      }
+    );
+  }
 
   @observable activityRegistry = new Map<string, IActivity>();
   @observable activity: IActivity | null = null;
@@ -24,11 +40,34 @@ export default class ActivityStore {
   @observable target: string = '';
   @observable loading: boolean = false;
   @observable.ref hubConnection: HubConnection | null = null;
+  @observable activityCount: number = 0;
+  @observable page: number = 0;
+  @observable predicate = new Map<string, string | Date>();
+
+  @computed get totalPages() {
+    return Math.ceil(this.activityCount / LIMIT);
+  }
 
   @computed get activitiesByDate() {
     return this.groupActivitiesByDate(
       Array.from(this.activityRegistry.values())
     );
+  }
+
+  @computed get axiosParams() {
+    const params = new URLSearchParams();
+    params.append('limit', String(LIMIT));
+    params.append('offset', `${this.page ? this.page * LIMIT : 0}`);
+
+    this.predicate.forEach((value: string | Date, key: string) => {
+      if (typeof value === 'string') {
+        params.append(key, value);
+      } else {
+        params.append(key, value.toISOString());
+      }
+    });
+
+    return params;
   }
 
   groupActivitiesByDate(activities: IActivity[]) {
@@ -50,7 +89,10 @@ export default class ActivityStore {
   @action loadActivities = async () => {
     this.loadingInitial = true;
     try {
-      const activities = await agent.Activities.list();
+      const activitiesEnvelope: IActivitiesEnvelope = await agent.Activities
+        .list(this.axiosParams);
+      const { activities, activityCount } = activitiesEnvelope;
+
       runInAction('loading activities', () => {
         activities.forEach((activity: IActivity) => {
           this.activityRegistry.set(
@@ -58,6 +100,7 @@ export default class ActivityStore {
             setActivityProps(activity, this.rootStore.userStore.user)
           );
         });
+        this.activityCount = activityCount;
       });
     } catch (error) {
       console.error(error);
@@ -262,5 +305,17 @@ export default class ActivityStore {
     try {
       await this.hubConnection!.invoke('SendComment', values);
     } catch (error) {}
+  };
+
+  @action setPage = (page: number) => {
+    this.page = page;
+  };
+
+  @action setPredicate = (predicate: string, value: string | Date) => {
+    this.predicate.clear();
+
+    if (predicate !== 'all') {
+      this.predicate.set(predicate, value);
+    }
   };
 }

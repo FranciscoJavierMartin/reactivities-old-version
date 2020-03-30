@@ -51,3 +51,8 @@ export interface IComment {
   displayName: string;
   image: string;
 }
+
+export interface IActivitiesEnvelope{
+  activities: IActivity[];
+  activityCount: number;
+}
